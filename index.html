@@ -1,0 +1,223 @@
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+
+        hearts = [];
+        const heartShape = new THREE.Shape();
+        heartShape.moveTo( 25, 25 );
+        heartShape.bezierCurveTo( 25, 25, 20, 0, 0, 0 );
+        heartShape.bezierCurveTo( -30, 0, -30, 35, -30, 35 );
+        heartShape.bezierCurveTo( -30, 55, -10, 77, 25, 95 );
+        heartShape.bezierCurveTo( 60, 77, 80, 55, 80, 35 );
+        heartShape.bezierCurveTo( 80, 35, 80, 0, 50, 0 );
+        heartShape.bezierCurveTo( 35, 0, 25, 25, 25, 25 );
+
+        const extrudeSettings = { depth: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+        const geometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
+
+        for (let i = 0; i < 25; i++) {
+            const material = new THREE.MeshStandardMaterial({ color: 0xff0055, roughness: 0.5, metalness: 0.1 });
+            const heart = new THREE.Mesh(geometry, material);
+            heart.position.set((Math.random() - 0.5) * 50, (Math.random() - 0.5) * 50, (Math.random() - 0.5) * 50);
+            heart.scale.set(0.05, 0.05, 0.05);
+            heart.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            heart.userData.baseY = heart.position.y;
+            hearts.push(heart);
+            scene.add(heart);
+        }
+        camera.position.z = 30;
+        animate();
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        hearts.forEach((heart, i) => {
+            heart.rotation.y += 0.005;
+            heart.position.y = heart.userData.baseY + Math.sin(Date.now() * 0.001 + i) * 2;
+        });
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    initThree();
+    
+    // Website logic
+    const steps = [
+    {
+            icon: "❤️",
+            headline: "Hey Beautiful,",
+            paragraph: "I built a little world for you, just to bring a smile to your face on your special day.",
+            button: "Let's Begin"
+        },
+        {
+            icon: "🎉",
+            headline: "Happy Birthday!",
+            paragraph: "Another year of you making the world brighter. Your existence is a gift, and I'm so lucky to witness it.",
+            button: "There's more..."
+        },
+        {
+            headline: "A Few Things I Adore About You",
+            layout: "bento",
+            cards: [
+                { title: "✨ Your Unmatched Kindness", text: "The genuine warmth you show to everyone is something truly rare and beautiful.", span: 2 },
+                { title: "😊 That Smile", text: "It's a work of art.", span: 1 },
+                { title: "🌟 Your Radiant Spirit", text: "Your passion for life is infectious. Being around you makes everything feel more exciting and possible.", span: 2 },
+            ],
+            button: "Remember this?"
+        },
+        {
+            headline: "That One Time...",
+            visual: "polaroid",
+            image: "https://i.ibb.co/6Z6XgCg/crush.webp",
+            caption: "Our favorite memory.",
+            paragraph: "Every moment with you feels like a scene from a movie I'd watch on repeat.",
+            button: "One last thing..."
+        },
+        {
+            icon: "🎂",
+            headline: "My Wish For You",
+            paragraph: "May the next year bring you all the love, success, and pure happiness you so rightfully deserve. May your dreams soar higher than ever.",
+            button: "Celebrate!"
+        }
+    ];
+
+    let currentStep = 0;
+    const mainContent = document.getElementById('main-content');
+    const progressBar = document.getElementById('progress-bar');
+    
+    function createStep(stepIndex) {
+        const stepData = steps[stepIndex];
+        const stepDiv = document.createElement('div');
+        stepDiv.id = `step-${stepIndex}`;
+        stepDiv.className = 'card rounded-lg p-8 w-full max-w-lg text-center flex flex-col items-center';
+
+        let content = '';
+        if (stepData.icon) {
+            content += `<div class="text-6xl mb-4">${stepData.icon}</div>`;
+        }
+
+        content += `<h1 class="text-4xl text-gradient font-bold mb-4">${stepData.headline}</h1>`;
+
+        if (stepData.paragraph) {
+            content += `<p class="text-lg mb-8">${stepData.paragraph}</p>`;
+        }
+        if (stepData.layout === 'bento') {
+            content += `<div class="grid grid-cols-2 gap-4 w-full mb-8">`;
+            stepData.cards.forEach(card => {
+                content += `<div class="card p-4 rounded-md col-span-${card.span}">
+                    <h2 class="text-gradient font-bold text-xl mb-2">${card.title}</h2>
+                    <p>${card.text}</p>
+                </div>`;
+            });
+            content += `</div>`;
+        }
+        if (stepData.visual === 'polaroid') {
+            content += `<div class="polaroid my-8">
+                <img src="${stepData.image}" alt="Shared Memory" class="w-full">
+                <p class="mt-4 text-black text-center">${stepData.caption}</p>
+            </div>`;
+        }
+         if (stepData.button) {
+            content += `<button class="btn-primary font-bold py-3 px-6 rounded-full">${stepData.button}</button>`;
+        }
+
+        stepDiv.innerHTML = content;
+        mainContent.appendChild(stepDiv);
+         const button = stepDiv.querySelector('button');
+        if (button) {
+            button.addEventListener('click', () => {
+                if (stepIndex === steps.length - 1) {
+                    celebrate();
+                } else {
+                    goToStep(stepIndex + 1);
+                }
+            });
+        }
+        return stepDiv;
+    }
+
+    function goToStep(stepIndex) {
+        const currentStepDiv = document.getElementById(`step-${currentStep}`);
+        gsap.to(currentStepDiv, {
+            opacity: 0,
+            scale: 0.9,
+            duration: 0.5,
+            onComplete: () => {
+                currentStepDiv.remove();
+                currentStep = stepIndex;
+                const newStepDiv = createStep(currentStep);
+                gsap.from(newStepDiv, {
+                    opacity: 0,
+                    y: 50,
+                    duration: 0.5
+                });
+                 gsap.to(progressBar, {
+                    width: `${(currentStep / (steps.length - 1)) * 100}%`,
+                    duration: 0.5
+                });
+            }
+        });
+    }
+    
+    function celebrate() {
+        const finalStepDiv = document.getElementById(`step-${currentStep}`);
+        const button = finalStepDiv.querySelector('button');
+        gsap.to(button, { opacity: 0, duration: 0.5, onComplete: () => button.remove() });
+
+        const finalMessage = document.createElement('p');
+        finalMessage.className = 'text-2xl mt-8';
+        finalMessage.textContent = "Happy Birthday, my crush! ❤️";
+        finalStepDiv.appendChild(finalMessage);
+        gsap.from(finalMessage, { opacity: 0, y: 20, duration: 1, delay: 0.5 });
+        
+        // Confetti
+        const duration = 5 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        function randomInRange(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        const interval = setInterval(function() {
+          const timeLeft = animationEnd - Date.now();
+
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          const particleCount = 50 * (timeLeft / duration);
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+
+        // 3D Hearts animation
+        hearts.forEach(heart => {
+            gsap.to(heart.position, {
+                x: (Math.random() - 0.5) * 100,
+                y: (Math.random() - 0.5) * 100,
+                z: (Math.random() - 0.5) * 100,
+                duration: 5,
+                ease: "power2.inOut"
+            });
+            gsap.to(heart.material, {
+                opacity: 0,
+                duration: 5,
+                onComplete: () => scene.remove(heart)
+            });
+        });
+    }
+    // Initial load
+    const initialStep = createStep(0);
+    gsap.from(initialStep, { opacity: 0, y: 50, duration: 1 });
+    gsap.to(progressBar, { width: `${(0 / (steps.length - 1)) * 100}%`, duration: 0.5 });
+
+</script>
